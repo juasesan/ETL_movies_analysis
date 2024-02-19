@@ -24,3 +24,13 @@ def extract_data_from_API(num_pages):
             print(f"Request failed in iteration {i+1} with status code: {response.status_code}")
     
     return pd.DataFrame(data)
+
+
+def transform_data(data_df):
+    # Removing unnecessary columns
+    data_df.drop(columns=['backdrop_path', 'overview', 'original_title', 'id', 'poster_path'], inplace=True)
+    
+    # Transforming dates to datetime
+    data_df['release_date'] = pd.to_datetime(data_df['release_date'])
+
+    return data_df

@@ -1,4 +1,9 @@
+import sys
+sys.path.append('/home/juasesan/python_projects/ETL_movies_analysis')
+
 from libs import *
+from etl_functions import *
+
 
 @dag(
     dag_id='movies_ETL',
@@ -25,3 +30,15 @@ def etl_process():
         )
         """
     )
+
+    @task()
+    def etl():
+        data_df = extract_data_from_API(num_pages=10)
+        data_df = transform_data(data_df)
+        return data_df
+    
+    movies_list = etl()
+    create_database.set_downstream(movies_list)
+
+
+result = etl_process()

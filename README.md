@@ -1,10 +1,14 @@
-# Movies Database ETL Pipeline and analysis
-This repository contains the code for an ETL (Extract, Transform, Load) pipeline built with Python and Apache Airflow to process data from the Movies Database and store it in a Data Warehouse using SQLite for further Exploratory Data Analysis (EDA).
+# Movies Database ETL pipeline and analysis
+This repository contains the code for an ETL (Extract, Transform, Load) pipeline built with Python and Apache Airflow to process data from The Movies Database and store it in a SQLite Data Warehouse for further Exploratory Data Analysis (EDA).
 
 ## Overview
-The Movies Database ETL pipeline extracts data of now playing movies from TMDB, transforms it into a suitable format, and loads it into each SQLite table previously created. The general Airflow DAG is presented:
+The Movies Database ETL pipeline extracts data of now playing movies from TMDB, cleans and transforms it into a suitable format, and loads it into each SQLite table previously created. The general Airflow DAG is presented:
 
-![image](https://github.com/juasesan/ETL_movies_analysis/assets/51239155/ccc4ce71-b3df-4cc5-9a78-1f71eb03380e)
+<div align="center">
+    
+ ![image](https://github.com/juasesan/ETL_movies_analysis/assets/51239155/ccc4ce71-b3df-4cc5-9a78-1f71eb03380e)
+
+</div>
 
 Where `etl()` is defined as:
 ```
@@ -19,6 +23,14 @@ def etl():
     # Load
     load_data_to_db(movies_df, genres_df, movies_genres)
 ```
+
+And the final data warehouse squema is:
+
+<div align="center">
+    
+ ![diagrama_sql_etl](https://github.com/juasesan/ETL_movies_analysis/assets/51239155/fd871657-09a5-486f-a439-d2d6e7c7b10c)
+
+</div>
 
 ## Features
 - Automated Workflow: Utilizes Apache Airflow for orchestrating the ETL process, ensuring scheduled and automated execution.

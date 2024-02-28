@@ -1,8 +1,9 @@
 from airflow.decorators import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.sqlite.hooks.sqlite import SqliteHook
 import pendulum
 
-from etl_functions import *
+from functions import *
 
 
 @dag(
@@ -12,6 +13,7 @@ from etl_functions import *
     catchup=False
 )
 def movies_etl_process():
+
     create_movies_table = SQLExecuteQueryOperator(
         task_id='create_movies_table',
         conn_id='movies',
@@ -21,8 +23,8 @@ def movies_etl_process():
             title TEXT,
             release_date DATE,
             original_language CHAR(2),
-            adult TEXT CHECK(adult IN ('True', 'False')),
-            video TEXT CHECK(video IN ('True', 'False')),
+            adult TEXT,
+            video TEXT,
             popularity FLOAT,
             vote_average FLOAT,
             vote_count INTEGER
@@ -57,9 +59,15 @@ def movies_etl_process():
 
     @task()
     def etl():
-        movies_df, genres_df = extract_data_from_API(num_pages=10)
-        movies_df = transform_data(movies_df)
-        return movies_df
+        # Extract
+        movies_df, genres_df = extract_data_from_API(num_pages=100)
+
+        # Transform
+        movies_df, movies_genres = transform_data(movies_df)
+
+        # Load
+        load_data_to_db(movies_df, genres_df, movies_genres)
+
     
     movies_list = etl()
     create_movies_table.set_downstream(create_genres_table)

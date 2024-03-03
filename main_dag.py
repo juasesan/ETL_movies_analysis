@@ -20,11 +20,11 @@ def movies_etl_process():
         sql=r"""
         CREATE TABLE IF NOT EXISTS movies(
             id INTEGER NOT NULL PRIMARY KEY,
-            title TEXT,
+            title TEXT NOT NULL,
             release_date DATE,
             original_language CHAR(2),
-            adult TEXT,
-            video TEXT,
+            adult INTEGER CHECK (adult IN (0, 1)),
+            video INTEGER CHECK (video IN (0, 1)),
             popularity FLOAT,
             vote_average FLOAT,
             vote_count INTEGER

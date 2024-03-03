@@ -56,8 +56,10 @@ def transform_data(movies_df):
     # Removing unnecessary columns from movies_df
     movies_df.drop(columns=['genre_ids', 'backdrop_path', 'overview', 'original_title', 'poster_path'], inplace=True)
     
-    # Transforming dates to datetime
+    # Transforming dates to datetime and boolean columns to integers
     movies_df['release_date'] = pd.to_datetime(movies_df['release_date'])
+    movies_df['adult'] = movies_df['adult'].astype(int)
+    movies_df['video'] = movies_df['video'].astype(int)
 
     # Reorder columns
     columns_ordered = ['adult', 'id', 'original_language', 'popularity', 'release_date', 'title', 'video', 'vote_average', 'vote_count']
@@ -91,7 +93,7 @@ def load_data_to_db(movies_df, genres_df, movies_genres):
     movies_genres.to_sql(name='movies_genres', con=engine, if_exists='append', index=False, method='multi')
 
 
-def query_sqlite_database(sql_query, database_path):
+def query_db(sql_query, database_path):
     """
     Executes an SQL query on a SQLite database and returns the results as a pandas DataFrame.
 
@@ -109,6 +111,9 @@ def query_sqlite_database(sql_query, database_path):
     try:
         # Execute the query and return the results in a DataFrame
         df = pd.read_sql_query(sql_query, conn)
+        if ("release_date" in df.columns):
+            df['release_date'] = pd.to_datetime(df['release_date'])
+
         return df
     except Exception as e:
         print(f"An error occurred: {e}")

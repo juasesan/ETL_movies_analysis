@@ -1,5 +1,5 @@
 # Movies Database ETL pipeline and analysis
-This repository contains the code for an ETL (Extract, Transform, Load) pipeline built with Python and Apache Airflow to process data from The Movies Database and store it in a SQLite Data Warehouse for further Exploratory Data Analysis (EDA).
+This repository contains the code for an ETL (Extract, Transform, Load) pipeline built with Python and Apache Airflow to process data from The Movies Database and store it in a SQLite Data Warehouse for further Exploratory Data Analysis (EDA) and machine learning modeling.
 
 ## Overview
 The Movies Database ETL pipeline extracts data of now playing movies from TMDB, cleans and transforms it into a suitable format, and loads it into each SQLite table previously created. The general Airflow DAG is presented:
@@ -43,6 +43,13 @@ And the final data warehouse squema is:
 - Apache Airflow
 - SQLite
 - Additional Python dependencies listed in requirements.txt
+
+## Future work
+Migrate this solution to AWS, leveraging technologies such as:
+- Lambda: For API calling and storing data in S3 buckets for next steps.
+- Glue: Where data transformations would be performed.
+- RDS: As a Data Warehouse powered by PostgreSQL where data is loaded for analysis, replacing SQLite.
+- Step Functions: FOr orchestrating each step of the pipeline, replacing Apache Airflow.
 
 ## Contributing
 Contributions are welcome! If you have any suggestions, bug fixes, or improvements, feel free to open an issue or create a pull request.

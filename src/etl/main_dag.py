@@ -3,7 +3,7 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.sqlite.hooks.sqlite import SqliteHook
 import pendulum
 
-from functions import *
+from src.etl.functions import *
 
 
 @dag(

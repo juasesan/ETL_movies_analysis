@@ -1,6 +1,5 @@
-key.txt
-test.py
-test.ipynb
+airflow/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

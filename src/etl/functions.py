@@ -2,11 +2,11 @@
 import os
 import pandas as pd
 from typing import Tuple, List, Dict, Any
-from .api_client import TMDBApiClient
-from .models import Movie, Genre, MovieGenre
-from .database import MovieDatabase
+from api_client import TMDBApiClient
+from models import Movie, Genre, MovieGenre
+from database import MovieDatabase
 
-def extract_data_from_API(num_pages: int) -> Tuple[List[Movie], List[Genre]]:
+def extract_data_from_API() -> Tuple[List[Movie], List[Genre]]:
     """
     Extract movie and genre data from TMDB API.
     
@@ -19,7 +19,7 @@ def extract_data_from_API(num_pages: int) -> Tuple[List[Movie], List[Genre]]:
     client = TMDBApiClient()
     
     # Get movies
-    movies_data = client.get_now_playing_movies(num_pages)
+    movies_data = client.get_now_playing_movies()
     movies = [Movie.from_dict(data) for data in movies_data]
     
     # Get genres

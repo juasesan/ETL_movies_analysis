@@ -24,20 +24,26 @@ class TMDBApiClient:
             "Authorization": f"Bearer {self.api_key}"
         }
     
-    def get_now_playing_movies(self, num_pages: int = 1) -> List[Dict[str, Any]]:
+    def get_now_playing_movies(self) -> List[Dict[str, Any]]:
         """
         Get movies that are now playing in theaters.
-        
-        Args:
-            num_pages: Number of pages to fetch
             
         Returns:
             List of movie dictionaries
         """
         endpoint = f"{self.BASE_URL}/movie/now_playing"
         movies = []
+
+        # Make a first GET to obtain the number of pages
+        try:
+            response = requests.get(f"{endpoint}?language=en-US&page=1", headers=self.headers)
+            response.raise_for_status()
+            total_pages = response.json()['total_pages']
+            movies.extend(response.json()['results'])
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching the total number of pages: {str(e)}")
         
-        for page in range(1, num_pages + 1):
+        for page in range(2, total_pages + 1):
             url = f"{endpoint}?language=en-US&page={page}"
             try:
                 response = requests.get(url, headers=self.headers)

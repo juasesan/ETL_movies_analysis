@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 import pandas as pd
+import uuid
 
 @dataclass
 class Genre:
@@ -27,22 +28,29 @@ class Genre:
 @dataclass
 class Movie:
     """Model representing a movie."""
-    id: int
-    title: str
-    original_language: str
-    popularity: float
-    release_date: datetime
-    adult: bool
-    video: bool
-    vote_average: float
-    vote_count: int
+    id: int = None  # Will be set automatically
+    title: str = ""
+    original_language: str = ""
+    popularity: float = 0.0
+    release_date: datetime = None
+    adult: bool = False
+    video: bool = False
+    vote_average: float = 0.0
+    vote_count: int = 0
+    overview: str = ""
     genre_ids: Optional[List[int]] = None
     
+    _id_counter = 1  # class-level counter for unique ids
+
+    def __post_init__(self):
+        if self.id is None:
+            self.id = Movie._id_counter
+            Movie._id_counter += 1
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Movie':
-        """Create a Movie instance from a dictionary."""
+        """Create a Movie instance from a dictionary, ignoring the API id and generating a new one."""
         return cls(
-            id=data['id'],
             title=data['title'],
             original_language=data['original_language'],
             popularity=data['popularity'],
@@ -51,6 +59,7 @@ class Movie:
             video=data['video'],
             vote_average=data['vote_average'],
             vote_count=data['vote_count'],
+            overview=data['overview'],
             genre_ids=data.get('genre_ids')
         )
     
@@ -60,7 +69,6 @@ class Movie:
         result = []
         for _, row in df.iterrows():
             movie = cls(
-                id=row['id'],
                 title=row['title'],
                 original_language=row['original_language'],
                 popularity=row['popularity'],
@@ -68,6 +76,7 @@ class Movie:
                 adult=bool(row['adult']),
                 video=bool(row['video']),
                 vote_average=row['vote_average'],
+                overview=row['overview'],
                 vote_count=row['vote_count']
             )
             result.append(movie)
@@ -83,6 +92,7 @@ class Movie:
             'release_date': self.release_date,
             'adult': int(self.adult),
             'video': int(self.video),
+            'overview': self.overview,
             'vote_average': self.vote_average,
             'vote_count': self.vote_count
         }

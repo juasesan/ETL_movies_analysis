@@ -3,7 +3,7 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.sqlite.hooks.sqlite import SqliteHook
 import pendulum
 
-from src.etl.functions import *
+from functions import *
 
 
 @dag(
@@ -26,6 +26,7 @@ def movies_etl_process():
             adult INTEGER CHECK (adult IN (0, 1)),
             video INTEGER CHECK (video IN (0, 1)),
             popularity FLOAT,
+            overview TEXT,
             vote_average FLOAT,
             vote_count INTEGER
         );
@@ -60,7 +61,7 @@ def movies_etl_process():
     @task()
     def etl():
         # Extract
-        movies_df, genres_df = extract_data_from_API(num_pages=100)
+        movies_df, genres_df = extract_data_from_API()
 
         # Transform
         movies_df, movies_genres = transform_data(movies_df)

@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from sqlalchemy import create_engine
 from airflow.providers.sqlite.hooks.sqlite import SqliteHook
 from dotenv import load_dotenv
-from .models import Movie, Genre, MovieGenre
+from models import Movie, Genre, MovieGenre
 
 class MovieDatabase:
     """Handler for database operations with movie data."""
@@ -20,19 +20,20 @@ class MovieDatabase:
         load_dotenv()
         self.hook = SqliteHook(sqlite_conn_id=connection_id)
         self.engine = self.hook.get_sqlalchemy_engine()
+        
     
     def load_movies(self, movies: List[Movie]) -> None:
         """
-        Load movies into the database, skipping existing ones.
+        Load movies into the database, skipping existing ones by title.
         
         Args:
             movies: List of Movie instances to load
         """
-        # Get existing movie IDs
-        existing_ids = set(self.hook.get_pandas_df('SELECT id FROM movies;')['id'].values)
+        # Get existing movie titles
+        existing_titles = set(self.hook.get_pandas_df('SELECT title FROM movies;')['title'].values)
         
-        # Filter out existing movies
-        new_movies = [movie for movie in movies if movie.id not in existing_ids]
+        # Filter out existing movies by title
+        new_movies = [movie for movie in movies if movie.title not in existing_titles]
         
         if not new_movies:
             print("No new movies to load.")
@@ -40,7 +41,8 @@ class MovieDatabase:
             
         # Convert to DataFrame and load
         movies_df = pd.DataFrame([movie.to_dict() for movie in new_movies])
-        movies_df.to_sql(name='movies', con=self.engine, if_exists='append', 
+        with self.hook.get_conn() as conn:
+            movies_df.to_sql(name='movies', con=conn, if_exists='append', 
                          index=False, method='multi')
         print(f"Loaded {len(new_movies)} new movies.")
     
@@ -64,7 +66,8 @@ class MovieDatabase:
         # Convert to DataFrame and load
         genres_df = pd.DataFrame([{'genre_id': g.genre_id, 'genre_name': g.genre_name} 
                                  for g in new_genres])
-        genres_df.to_sql(name='genres', con=self.engine, if_exists='append', 
+        with self.hook.get_conn() as conn:
+            genres_df.to_sql(name='genres', con=conn, if_exists='append', 
                          index=False, method='multi')
         print(f"Loaded {len(new_genres)} new genres.")
     
@@ -82,6 +85,7 @@ class MovieDatabase:
         # Convert to DataFrame and load
         mg_df = pd.DataFrame([{'movie_id': mg.movie_id, 'genre_id': mg.genre_id} 
                              for mg in movie_genres])
-        mg_df.to_sql(name='movies_genres', con=self.engine, if_exists='append', 
+        with self.hook.get_conn() as conn:
+            mg_df.to_sql(name='movies_genres', con=conn, if_exists='append', 
                      index=False, method='multi')
         print(f"Loaded {len(movie_genres)} movie-genre relationships.")

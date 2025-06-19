@@ -37,3 +37,18 @@ def load_language_distribution():
     """, conn)
     conn.close()
     return df
+
+@st.cache_data(ttl=3600)
+def load_vote_average():
+    conn = get_connection()
+    df = pd.read_sql("""
+        SELECT original_language, 
+            CAST(vote_average AS INTEGER) AS vote_bin,
+            COUNT(*) AS num_movies
+        FROM movies
+        WHERE vote_average >= 1 AND vote_average <= 10
+        GROUP BY original_language, vote_bin
+        ORDER BY original_language, vote_bin;
+    """, conn)
+    conn.close()
+    return df

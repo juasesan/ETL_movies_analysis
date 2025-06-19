@@ -28,16 +28,25 @@ def main():
         st.warning("No data found in the database.")
         return
 
-    st.subheader("Sample of Movies Data")
-    st.dataframe(df.head(10))
+    st.subheader("Sample of movies data: Top 10 most popular movies currently in theatress")
+    st.dataframe(df.sort_values(by='popularity', ascending=False).head(10))
+
+    # Get unique languages for later selectors
+    languages = sorted(df['original_language'].unique())
 
     # Create two columns for plots
     col1, col2 = st.columns(2)
 
     # First column - Popularity histogram
     with col1:
-        st.subheader("📊 Popularity Distribution")
-        st.plotly_chart(plot_popularity_distribution(df))
+        st.subheader("Most popular movies by language")
+        pop_lang_selector = st.selectbox(
+            "Select Language:",
+            options=languages,
+            index=0
+        )        
+        filtered_df = df[df['original_language'] == pop_lang_selector].drop(columns=['id', 'original_language'])
+        st.dataframe(filtered_df.sort_values(by='popularity', ascending=False).head(10))
 
         st.subheader("🎭 Movie Genres")
         genre_df = load_genre_distribution()
@@ -45,7 +54,7 @@ def main():
 
     # Second column - Top languages
     with col2:
-        st.subheader("Top 10 Original Languages")
+        st.subheader("Top 10 languages by number of movies")
         top_languages = df['original_language'].value_counts().head(10)
         
         # Create bar plot using plotly
@@ -65,6 +74,22 @@ def main():
         )
         
         st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("Distribution of movies rating by language")
+        vote_bins = load_vote_average()
+
+        # Create a Streamlit dropdown selector
+        selected_lang = st.selectbox(
+            "Select Language:",
+            options=languages,
+            index=1
+        )
+
+        # Show the bar chart for the selected language using Streamlit
+        st.plotly_chart(
+            plot_vote_average_per_language(vote_bins, selected_lang),
+            use_container_width=True
+        )
 
 if __name__ == "__main__":
     main()

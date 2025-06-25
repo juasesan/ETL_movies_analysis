@@ -7,18 +7,22 @@ from src.data_loaders import *
 from src.visualizations import *
 
 # Set page config
-st.set_page_config(page_title="Movies Dashboard", layout="wide")
+st.set_page_config(
+    page_title="Movies Dashboard",
+    page_icon="🎬",
+    layout="wide"
+)
 
-# Sidebar for navigation (for future expansion)
-#st.sidebar.title("Navigation")
-#st.sidebar.markdown("- Overview\n- Add more plots later")
-
-st.title("Now Playing movies Analysis")
+st.title("What to know what's on movie theaters now? Check this dashboard")
 st.markdown(
 """
-* This dashboard vizualizes Now Playing movies data obtained from The Movie DataBase (TMDB) ⚡
-* TMDB provides an API for getting a list of movies that are currently in theatres.
-* To explore the back-end services that power this Dashboard, check out [this repository](https://github.com/juasesan/ETL_movies_analysis) ✨
+* Here you can vizualize movies data obtained from The Movie DataBase (TMDB) 🎬
+* TMDB provides an API for getting a list of movies that are currently on theatres all around the world 🌎
+* To explore the back-end services that power this Dashboard, check out [this repository](https://github.com/juasesan/ETL_movies_analysis) 💻
+* Some terminology for your reference:
+    - Release Date: The original release date of the movie (is common to see some re-launched movies, like: The Lord of the Rings, Star Wars, etc)
+    - Vote Average: The rating from 1 to 10 of the movie
+    - Vote Count: How many people have voted to rate the movie
 """)
 
 # Main dashboard
@@ -29,67 +33,73 @@ def main():
         return
 
     st.subheader("Sample of movies data: Top 10 most popular movies currently in theatress")
-    st.dataframe(df.sort_values(by='popularity', ascending=False).head(10))
+    st.dataframe(df.sort_values(by='popularity', ascending=False).head(10).drop(columns=['popularity']))
 
     # Get unique languages for later selectors
     languages = sorted(df['original_language'].unique())
 
+    # Get genres for later selectors
+    genres = load_genres()
+
     # Create two columns for plots
     col1, col2 = st.columns(2)
 
+    # Constant for storing the height of each figure
+    PLOT_HEIGHT = 450
+
     # First column - Popularity histogram
     with col1:
+        # First plot
+        st.subheader("Popularity vs rating comparisson")
+        fig_pop_vs_rating = plot_popularity_vs_rating(df)
+        fig_pop_vs_rating.update_layout(
+            xaxis_title="Rating (1 to 10)",
+            yaxis_title="Popularity Index",
+            showlegend=False,
+            height=PLOT_HEIGHT
+        )
+        st.plotly_chart(fig_pop_vs_rating, use_container_width=True)
+
+        # Second plot
+        st.subheader("Percentage of available genres")
+        genre_df = load_genre_distribution()
+        fig_genre_pie = plot_genre_pie_chart(genre_df)
+        fig_genre_pie.update_layout(height=PLOT_HEIGHT)
+        st.plotly_chart(fig_genre_pie, use_container_width=True)
+        
+        # Third plot
+        st.subheader("Most popular movies by genre")
+        pop_genre_selector = st.selectbox(
+            "Select Genre:",
+            options=genres,
+            index=0
+        )
+        genres_popularity_df = load_popularity_by_genre(pop_genre_selector)
+        st.dataframe(genres_popularity_df)
+
+    # Second column - Top languages
+    with col2:
+        # First plot
+        st.subheader("Top 10 languages by number of movies")
+        fig_lang_bar = plot_top_languages_bar(df, top_n=10)
+        fig_lang_bar.update_layout(height=PLOT_HEIGHT)
+        st.plotly_chart(fig_lang_bar, use_container_width=True)
+
+        # Second plot
+        st.subheader("Rating distribution by top 5 most common languages")
+        fig_lang_rating_dist = plot_top_lang_rating_dist(df)
+        fig_lang_rating_dist.update_layout(height=PLOT_HEIGHT)
+        st.plotly_chart(fig_lang_rating_dist, use_container_width=True)
+
+        # Third plot
         st.subheader("Most popular movies by language")
         pop_lang_selector = st.selectbox(
             "Select Language:",
             options=languages,
-            index=0
+            index=14
         )        
-        filtered_df = df[df['original_language'] == pop_lang_selector].drop(columns=['id', 'original_language'])
-        st.dataframe(filtered_df.sort_values(by='popularity', ascending=False).head(10))
-
-        st.subheader("🎭 Movie Genres")
-        genre_df = load_genre_distribution()
-        st.plotly_chart(plot_genre_pie_chart(genre_df), use_container_width=True)
-
-    # Second column - Top languages
-    with col2:
-        st.subheader("Top 10 languages by number of movies")
-        top_languages = df['original_language'].value_counts().head(10)
-        
-        # Create bar plot using plotly
-        fig = px.bar(
-            x=top_languages.index,
-            y=top_languages.values,
-            labels={'x': 'Language', 'y': 'Count'},
-            color=top_languages.values,
-            color_continuous_scale='Viridis'
-        )
-        
-        # Update layout for better visualization
-        fig.update_layout(
-            xaxis_title="Language",
-            yaxis_title="Number of Movies",
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.subheader("Distribution of movies rating by language")
-        vote_bins = load_vote_average()
-
-        # Create a Streamlit dropdown selector
-        selected_lang = st.selectbox(
-            "Select Language:",
-            options=languages,
-            index=1
-        )
-
-        # Show the bar chart for the selected language using Streamlit
-        st.plotly_chart(
-            plot_vote_average_per_language(vote_bins, selected_lang),
-            use_container_width=True
-        )
+        filtered_df = df[df['original_language'] == pop_lang_selector]
+        st.dataframe(filtered_df.sort_values(by='popularity', ascending=False).head(10).drop(columns=['original_language', 'popularity']))
 
 if __name__ == "__main__":
     main()

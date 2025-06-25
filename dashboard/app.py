@@ -13,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("What to know what's on movie theaters now? Check this dashboard")
+st.title("Want to know what's on movie theaters now? Check this dashboard")
 st.markdown(
 """
 * Here you can vizualize movies data obtained from The Movie DataBase (TMDB) 🎬

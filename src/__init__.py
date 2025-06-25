@@ -1,3 +1,0 @@
-"""
-ETL Movies Analysis package.
-""" 
